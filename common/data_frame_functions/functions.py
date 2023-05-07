@@ -119,6 +119,8 @@ class Functions:
 					f_3.write(message)
 					return ""
 			else:
+				message = self.write_log_message(x['id'], x['subreddit'], f"Image not found in {temp_path}", Exception("No image"))
+				f_3.write(message)
 				return ""
 
 	def fix_path(self, x:object, fl: []) -> str:
