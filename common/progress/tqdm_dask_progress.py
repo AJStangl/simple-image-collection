@@ -2,6 +2,7 @@ from dask.callbacks import Callback
 from tqdm.autonotebook import tqdm
 
 
+# noinspection PyUnusedLocal,HttpUrlsUsage
 class TQDMDaskProgressBar(Callback, object):
 	"""
     A tqdm progress bar for dask.
@@ -29,6 +30,7 @@ class TQDMDaskProgressBar(Callback, object):
 	def _start_state(self, dsk, state):
 		self._tqdm = tqdm(total=sum(len(state[k]) for k in self.states), **self.tqdm_args)
 
+	# noinspection PyUnusedLocal
 	def _posttask(self, key, result, dsk, state, worker_id):
 		self._tqdm.update(1)
 
