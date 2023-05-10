@@ -2,3 +2,4 @@
 /venv/
 /notebooks/temp/
 /.env
+/notebooks/.env

@@ -36,7 +36,6 @@ tagging_schema = pyarrow.schema(
 		pyarrow.field("exists", pyarrow.bool_()),
 		pyarrow.field("curated", pyarrow.bool_()),
 		pyarrow.field("accept", pyarrow.bool_()),
-		pyarrow.field("tags", pyarrow.list_(pyarrow.string())),
-		pyarrow.field("descriptions", pyarrow.list_(pyarrow.dict(pyarrow.string(), pyarrow.float64())))
+		pyarrow.field("tags", pyarrow.list_(pyarrow.string()))
 	]
 )
