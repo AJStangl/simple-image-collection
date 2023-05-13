@@ -9,3 +9,4 @@ transformers~=4.28.1
 pandas~=2.0.1
 praw~=7.7.0
 azure-ai-vision
+mount-azure-blob
