@@ -12,3 +12,4 @@ azure-ai-vision
 mount-azure-blob
 azure-ai-ml
 azure-cognitiveservices-vision-computervision
+dotenv
