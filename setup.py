@@ -20,7 +20,8 @@ setup(
 			  'common/captioning',
 			  'common/progress',
 			  'common/schemas',
-			  'common/storage'],
+			  'common/storage',
+			 'common/data_frame_functions'],
 
 	long_description=read('README.md'),
 	classifiers=[
