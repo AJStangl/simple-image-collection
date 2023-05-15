@@ -29,7 +29,7 @@ setup(
 	],
 	entry_points={
 		'console_scripts': [
-			'simple-collection = main.py',
+			'simple-collection = main:main.py',
 		],
 	},
 )
