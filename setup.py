@@ -21,7 +21,8 @@ setup(
 			  'common/progress',
 			  'common/schemas',
 			  'common/storage',
-			 'common/data_frame_functions'],
+			'common/functions'
+			  ],
 
 	long_description=read('README.md'),
 	classifiers=[
