@@ -16,13 +16,14 @@ setup(
     keywords="GPT2",
     include_package_data=True,
     url="https://example.com",
-    packages=['common',
-              'common/captioning',
-              'common/progress',
-              'common/schemas',
-              'common/storage',
-              'common/functions'
-              ],
+    packages=[
+        'common',
+        'common/captioning',
+        'common/progress',
+        'common/schemas',
+        'common/storage',
+        'common/functions'
+    ],
 
     long_description=read('README.md'),
     classifiers=[
@@ -34,4 +35,5 @@ setup(
             'simple-collection = main:main.py',
         ],
     },
+    requires=['adlfs', 'praw']
 )

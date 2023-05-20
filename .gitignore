@@ -3,3 +3,5 @@
 /notebooks/temp/
 /.env
 /notebooks/.env
+common/*/__pycache__/*.cpython*.pyc
+common/*/__pycache__/*
