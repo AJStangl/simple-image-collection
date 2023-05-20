@@ -5,3 +5,6 @@
 /notebooks/.env
 common/*/__pycache__/*.cpython*.pyc
 common/*/__pycache__/*
+/notebooks/*/temp.jpg
+/.idea/vcs.xml
+/notebooks/*/temp.json
