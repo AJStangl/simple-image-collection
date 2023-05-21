@@ -44,3 +44,4 @@ tagging_schema = pyarrow.schema(
 		pyarrow.field("thumbnail_accept", pyarrow.bool_()),
 	]
 )
+
