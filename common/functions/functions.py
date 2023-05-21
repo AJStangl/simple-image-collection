@@ -123,7 +123,7 @@ class Functions:
 				f_3.write(message)
 				return ""
 
-	def fix_path(self, x:object, fl: []) -> str:
+	def fix_path(self, x: object, fl: []) -> str:
 		current_path = x['path']
 		exists = x['exists']
 		if current_path in fl:

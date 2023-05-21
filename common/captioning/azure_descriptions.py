@@ -1,4 +1,4 @@
-# import logging
+import logging
 import os
 import random
 from typing import Union
@@ -29,7 +29,7 @@ class AzureCaption(object):
 				self.__file_system_reference.url(image_path), max_candidates=10, raw=True)
 			return describe_response
 		except Exception as e:
-			logging.error(e)
+			print(e)
 			return None
 
 	def _get_image_analyzer(self, image_path: str = None, image_url: str = None) -> ImageAnalyzer:
