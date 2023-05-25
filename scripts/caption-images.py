@@ -16,9 +16,8 @@ def run(_filtered_model, _current_captions):
 	i = 0
 	j = 0
 	records = _filtered_model.to_dict(orient='records')
-
-	for record in records:
-
+	new_records = [f"data/caption/{item['id']}.json" for item in records if item['id'] not in _current_captions]
+	for record in new_records:
 		try:
 			_file_system: AzureBlobFileSystem = AzureFileStorageAdapter('data').get_file_storage()
 			caption_reference = AzureCaption(_file_system)

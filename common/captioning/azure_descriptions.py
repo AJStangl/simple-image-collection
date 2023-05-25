@@ -6,21 +6,20 @@ from typing import Union
 import pandas
 from adlfs import AzureBlobFileSystem
 from azure.ai.vision import VisionServiceOptions, VisionSource, ImageAnalysisOptions, ImageAnalysisFeature, \
-	ImageAnalyzer, ImageAnalysisResultReason, ImageAnalysisResultDetails, ImageAnalysisErrorDetails
+	ImageAnalyzer, ImageAnalysisResultDetails
 from azure.cognitiveservices.vision.computervision import ComputerVisionClientConfiguration, ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import ImageDescription
 from azure.ai.vision import ImageAnalysisResult
-#
-# logging.basicConfig(level=logging.DEBUG)
-# logging.getLogger(__name__)
 
 
 class AzureCaption(object):
 	def __init__(self, file_system_reference):
 		self.__subscription_key: str = os.environ["AZURE_VISION_KEY"]
 		self.__endpoint: str = os.environ["AZURE_VISION_ENDPOINT"]
-		self.__credentials: ComputerVisionClientConfiguration = ComputerVisionClientConfiguration(endpoint=self.__endpoint, credentials=self.__subscription_key)
-		self.__vision_client: ComputerVisionClient = ComputerVisionClient(endpoint=self.__endpoint, credentials=self.__credentials)
+		self.__credentials: ComputerVisionClientConfiguration = ComputerVisionClientConfiguration(
+			endpoint=self.__endpoint, credentials=self.__subscription_key)
+		self.__vision_client: ComputerVisionClient = ComputerVisionClient(endpoint=self.__endpoint,
+																		  credentials=self.__credentials)
 		self.__file_system_reference: AzureBlobFileSystem = file_system_reference
 
 	def generate_ai_tags(self, image_path: str) -> Union[ImageDescription, None]:
@@ -61,11 +60,16 @@ class AzureCaption(object):
 		"""
 		Analyze image from file, all features, synchronous (blocking)
 		"""
-
 		analyzer = self._get_image_analyzer(image_path=None, image_url=image_path)
+		try:
+			result_analysis: ImageAnalysisResult = analyzer.analyze()
 
-		result_analysis: ImageAnalysisResult = analyzer.analyze()
+			result_details: ImageAnalysisResultDetails = ImageAnalysisResultDetails.from_result(result_analysis)
 
-		result_details: ImageAnalysisResultDetails = ImageAnalysisResultDetails.from_result(result_analysis)
+			return result_details
 
-		return result_details
+		except Exception as e:
+			print(e)
+			return None
+		finally:
+			del analyzer

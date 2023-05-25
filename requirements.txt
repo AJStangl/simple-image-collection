@@ -13,3 +13,6 @@ mount-azure-blob
 azure-ai-ml
 azure-cognitiveservices-vision-computervision
 python-dotenv
+azure-data-tables
+azure-storage-queue
+diffusers

@@ -8,3 +8,9 @@ common/*/__pycache__/*
 /notebooks/*/temp.jpg
 /.idea/vcs.xml
 /notebooks/*/temp.json
+/**/*/log.txt
+/**/*/temp,*
+/notebooks/pipelines/images/temp/
+/notebooks/pipelines/images/temp.jpg
+/notebooks/pipelines/images/temp.json
+/notebooks/pipelines/images/.ipynb_checkpoints/
