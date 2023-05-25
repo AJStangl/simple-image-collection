@@ -16,3 +16,4 @@ python-dotenv
 azure-data-tables
 azure-storage-queue
 diffusers
+bigtree
