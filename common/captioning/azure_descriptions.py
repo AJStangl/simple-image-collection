@@ -60,16 +60,12 @@ class AzureCaption(object):
 		"""
 		Analyze image from file, all features, synchronous (blocking)
 		"""
-		analyzer = self._get_image_analyzer(image_path=None, image_url=image_path)
 		try:
+			analyzer = self._get_image_analyzer(image_path=None, image_url=image_path)
 			result_analysis: ImageAnalysisResult = analyzer.analyze()
-
 			result_details: ImageAnalysisResultDetails = ImageAnalysisResultDetails.from_result(result_analysis)
-
 			return result_details
 
 		except Exception as e:
 			print(e)
 			return None
-		finally:
-			del analyzer

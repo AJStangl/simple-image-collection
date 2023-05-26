@@ -15,21 +15,19 @@ def run(_filtered_model, _current_captions):
 	total = len(_filtered_model)
 	i = 0
 	j = 0
-	records = _filtered_model.to_dict(orient='records')
 
-	for record in records:
-
+	for record in _filtered_model.to_dict(orient='records'):
 		try:
-			_file_system: AzureBlobFileSystem = AzureFileStorageAdapter('data').get_file_storage()
-			caption_reference = AzureCaption(_file_system)
 			image_id = record['id']
 			path = record['path']
 			out_path = f"data/caption/{image_id}.json"
-			remote_path: str = _file_system.url(path)
 			if out_path in _current_captions:
 				continue
 			try:
 				print(f"Captioning {i} of {total}")
+				_file_system: AzureBlobFileSystem = AzureFileStorageAdapter('data').get_file_storage()
+				remote_path: str = _file_system.url(path)
+				caption_reference = AzureCaption(_file_system)
 				caption_output = caption_reference.image_analysis(remote_path)
 
 				if caption_output is None:
@@ -137,6 +135,7 @@ if __name__ == '__main__':
 	print("Starting Captioning...")
 
 	run(filtered_model, current_captions)
+
 
 	print(f"Total Number Of Caption Files - {len(file_system.ls('data/caption'))}")
 
