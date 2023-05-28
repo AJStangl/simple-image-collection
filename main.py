@@ -68,8 +68,6 @@ def run(_filtered_model, _current_captions):
 
 		finally:
 			i += 1
-			del caption_reference
-			del _file_system
 
 
 if __name__ == '__main__':

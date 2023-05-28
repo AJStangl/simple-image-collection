@@ -42,6 +42,7 @@ tagging_schema = pyarrow.schema(
 		pyarrow.field("thumbnail_exists", pyarrow.bool_()),
 		pyarrow.field("thumbnail_curated", pyarrow.bool_()),
 		pyarrow.field("thumbnail_accept", pyarrow.bool_()),
+		pyarrow.field("additional_captions", pyarrow.list_(pyarrow.string())),
 	]
 )
 
