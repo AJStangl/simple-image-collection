@@ -9,14 +9,12 @@ import praw
 import sys
 import time
 import torch
-from diffusers import StableDiffusionPipeline
 from praw import Reddit
 from praw.reddit import Submission
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
+from diffusers import DiffusionPipeline, StableDiffusionPipeline
 
-from common import load_dotenv
-
-load_dotenv()
+import os
 
 from common.utility.storage.blob import BlobAdapter
 from common.utility.storage.table import TableAdapter
@@ -24,9 +22,7 @@ from common.utility.storage.table import TableAdapter
 logging.getLogger("diffusers").setLevel(logging.WARNING)
 logging.getLogger("azure.storage").setLevel(logging.WARNING)
 
-import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
 
 
 class FuckingStatic:
@@ -233,10 +229,18 @@ class SimpleBot(threading.Thread):
 			holder: PipeLineHolder = self.holders[model_index]
 
 			print(f":: Using model: {holder.diffusion_pipeline_path}")
+
 			print(f":: Using Device: {self.instance}")
 
-			pipe = StableDiffusionPipeline.from_pretrained(holder.diffusion_pipeline_path, revision="fp16",
-														   torch_dtype=torch.float16, safety_checker=None)
+
+			diff_pipe: DiffusionPipeline = DiffusionPipeline.from_pretrained(f"{holder.diffusion_pipeline_path}", safety_checker=None)
+
+			pipe = StableDiffusionPipeline(**diff_pipe.components)
+
+			# pipe.to("cuda")
+
+			# pipe = StableDiffusionPipeline.from_pretrained(holder.diffusion_pipeline_path, revision="fp16", torch_dtype=torch.float16, safety_checker=None)
+
 			print(":: Model Loaded")
 
 			reddit_text, image_prompt = self.create_prompt(holder)
@@ -249,7 +253,7 @@ class SimpleBot(threading.Thread):
 			print("Prompt: " + image_prompt)
 
 			gen = f"{reddit_text} : {image_prompt}"
-			# gen = image_prompt
+			gen = image_prompt
 
 			try:
 				(image_output, guidance, num_steps) = FuckingStatic.create_image(gen, pipe, str(self.instance))
@@ -274,7 +278,8 @@ class SimpleBot(threading.Thread):
 					"AsianOfficeLadyDiffusion": "0e69c05e-cf41-11ed-a6d7-c265ef3d634d",
 					"SexyAsianDiffusion": "e978fd72-d0cc-11ed-802d-922e8d939dd5",
 					"MildlyPenisDiffusion": "7aedfca4-d676-11ed-9536-6a42b6ad77bd",
-					"TTTDiffusion": "25d50538-d6f7-11ed-9f0f-6a1b95511d30"
+					"TTTDiffusion": "25d50538-d6f7-11ed-9f0f-6a1b95511d30",
+					"SexyGirl": "6c02c0aa-c116-11ed-a36b-625bab71eac2"
 				}
 
 				submission: Submission = sub.submit_image(
@@ -319,46 +324,50 @@ class SimpleBot(threading.Thread):
 
 if __name__ == '__main__':
 
-	prompt_model: str = "D:\\models\\sd-prompt-bot-7"
+	prompt_model: str = "D:\\code\\repos\\simple-collection\\notebooks\\pipelines\\images\\sd-prompt-bot"
 
-	pipeline_1 = PipeLineHolder("SexyDiffusion", "D:\\models\\SexyDiffusion", prompt_model)
+	# pipeline_1 = PipeLineHolder("SexyDiffusion", "D:\\models\\SexyDiffusion", prompt_model)
+	#
+	# pipeline_2 = PipeLineHolder("NatureDiffusion", "D:\\models\\NatureDiffusion", prompt_model)
+	#
+	# pipeline_3 = PipeLineHolder("CityDiffusion", "D:\\models\\CityScapes", prompt_model)
+	#
+	# pipeline_4 = PipeLineHolder("CosmicDiffusion", "D:\\models\\CosmicDiffusion", prompt_model)
+	#
+	# pipeline_5 = PipeLineHolder("MemeDiffusion", "D:\\models\\MemeDiffusion", prompt_model)
+	#
+	# pipeline_6 = PipeLineHolder("RedHeadDiffusion", "D:\\models\\RedHeadDiffusion", prompt_model)
+	#
+	# pipeline_7 = PipeLineHolder("ITAPDiffusion", "D:\\models\\ITAPDiffusion", prompt_model)
+	#
+	# pipeline_8 = PipeLineHolder("SWFPetite", "D:\\models\\SWFPetite", prompt_model)
+	#
+	# pipeline_9 = PipeLineHolder("FatSquirrelDiffusion", "D:\\models\\FatSquirrelDiffusion", prompt_model)
+	#
+	# pipeline_10 = PipeLineHolder("SexyAsianDiffusion", "D:\\models\\AsianDiffusion", prompt_model)
+	#
+	# pipeline_12 = PipeLineHolder("MildlyPenisDiffusion", "D:\\models\\MildlyPenisDiffusion", prompt_model)
+	#
+	# pipeline_13 = PipeLineHolder("TTTDiffusion", "D:\\models\\TTTDiffusion", prompt_model)
 
-	pipeline_2 = PipeLineHolder("NatureDiffusion", "D:\\models\\NatureDiffusion", prompt_model)
+	pipeline_14 = PipeLineHolder("SexyGirl", "D:\\code\\repos\\simple-collection\\notebooks\\pipelines\\images\\SexyDiffusion-3", prompt_model)
 
-	pipeline_3 = PipeLineHolder("CityDiffusion", "D:\\models\\CityScapes", prompt_model)
+	pipe_line_holder_list = [pipeline_14]
 
-	pipeline_4 = PipeLineHolder("CosmicDiffusion", "D:\\models\\CosmicDiffusion", prompt_model)
-
-	pipeline_5 = PipeLineHolder("MemeDiffusion", "D:\\models\\MemeDiffusion", prompt_model)
-
-	pipeline_6 = PipeLineHolder("RedHeadDiffusion", "D:\\models\\RedHeadDiffusion", prompt_model)
-
-	pipeline_7 = PipeLineHolder("ITAPDiffusion", "D:\\models\\ITAPDiffusion", prompt_model)
-
-	pipeline_8 = PipeLineHolder("SWFPetite", "D:\\models\\SWFPetite", prompt_model)
-
-	pipeline_9 = PipeLineHolder("FatSquirrelDiffusion", "D:\\models\\FatSquirrelDiffusion", prompt_model)
-
-	pipeline_10 = PipeLineHolder("SexyAsianDiffusion", "D:\\models\\AsianDiffusion", prompt_model)
-
-	pipeline_12 = PipeLineHolder("MildlyPenisDiffusion", "D:\\models\\MildlyPenisDiffusion", prompt_model)
-
-	pipeline_13 = PipeLineHolder("TTTDiffusion", "D:\\models\\TTTDiffusion", prompt_model)
-
-	pipe_line_holder_list = [
-		pipeline_1,
-		pipeline_2,
-		pipeline_3,
-		pipeline_4,
-		pipeline_5,  # , pipeline_5, pipeline_5,
-		pipeline_6,
-		pipeline_7,  # , pipeline_7, pipeline_7,
-		pipeline_8,
-		pipeline_9,  # , pipeline_9, pipeline_9,  pipeline_9, pipeline_9,
-		pipeline_10,
-		pipeline_12,  # , pipeline_12, pipeline_12, pipeline_12,
-		pipeline_13  # , pipeline_13, pipeline_13, pipeline_13, pipeline_13, pipeline_13
-	]
+	# pipe_line_holder_list = [
+	# 	pipeline_1,
+	# 	pipeline_2,
+	# 	pipeline_3,
+	# 	pipeline_4,
+	# 	pipeline_5, #, pipeline_5, pipeline_5,
+	# 	pipeline_6,
+	# 	pipeline_7, #, pipeline_7, pipeline_7,
+	# 	pipeline_8,
+	# 	pipeline_9, #, pipeline_9, pipeline_9,  pipeline_9, pipeline_9,
+	# 	pipeline_10,
+	# 	pipeline_12 ,#, pipeline_12, pipeline_12, pipeline_12,
+	# 	pipeline_13 #, pipeline_13, pipeline_13, pipeline_13, pipeline_13, pipeline_13
+	# ]
 
 	print(":: Starting Bot")
 	random.shuffle(pipe_line_holder_list)
