@@ -112,7 +112,9 @@ if __name__ == '__main__':
 	]
 	sources_df = pandas.DataFrame.from_records(sources)
 
-	curated_data = pandas.read_parquet("data/parquet/back.parquet", engine="pyarrow", filesystem=file_system)
+	curated_data = pandas.read_parquet("data/parquet/primary_caption.parquet", engine="pyarrow", filesystem=file_system)
+	secondary_data = pandas.read_parquet("data/parquet/thumbnail_curation.parquet", engine="pyarrow", filesystem=file_system)
+
 
 	curated_data.set_index("id", inplace=True, drop=False)
 
@@ -133,7 +135,6 @@ if __name__ == '__main__':
 	print("Starting Captioning...")
 
 	run(filtered_model, current_captions)
-
 
 	print(f"Total Number Of Caption Files - {len(file_system.ls('data/caption'))}")
 
