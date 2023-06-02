@@ -239,7 +239,7 @@ class SimpleBot(threading.Thread):
 
 			# pipe.to("cuda")
 
-			# pipe = StableDiffusionPipeline.from_pretrained(holder.diffusion_pipeline_path, revision="fp16", torch_dtype=torch.float16, safety_checker=None)
+			# pipe = StableDiffusionPipeline.from_pretrained(	holder.diffusion_pipeline_path, revision="fp16", torch_dtype=torch.float16, safety_checker=None)
 
 			print(":: Model Loaded")
 

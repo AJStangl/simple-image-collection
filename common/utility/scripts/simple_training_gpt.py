@@ -72,7 +72,7 @@
 # 	print(tokenizer.eos_token)
 #
 # 	# Notice: resize_token_embeddings expect to receive the full size of the new vocabulary,
-# 	# i.e., the length of the tokenizer.
+# 	# primary_image_index.e., the length of the tokenizer.
 # 	model.resize_token_embeddings(len(tokenizer))
 #
 # 	model.save_pretrained(model_output_dir)
@@ -166,13 +166,13 @@
 # 									num_return_sequences=100,
 # 									repetition_penalty=1.1)
 #
-# 	for i, sample_output in enumerate(sample_outputs):
+# 	for primary_image_index, sample_output in enumerate(sample_outputs):
 # 		result = tokenizer.decode(sample_output, skip_special_tokens=True)
 # 		if result not in result_distinct:
 # 			result_distinct.append(result)
 #
-# 	for elem in result_distinct:
-# 		print(elem)
+# 	for primary_image_record in result_distinct:
+# 		print(primary_image_record)
 #
 #
 # if __name__ == '__main__':

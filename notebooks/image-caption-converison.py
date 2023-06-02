@@ -167,9 +167,9 @@ def main():
 	print(crops)
 
 
-# for elem in tqdm(foo.values, total=len(foo.values), desc='Creating thumbnails'):
-# 	create_thumbnail(elem, curated_df, crops, extant)
-# for elem in tqdm(curated_df.id.values, total=len(curated_df.id.values), desc='Creating thumbnails'):
-# 	create_thumbnail(elem, curated_df, crops, extant)
+# for primary_image_record in tqdm(foo.values, total=len(foo.values), desc='Creating thumbnails'):
+# 	create_thumbnail(primary_image_record, curated_df, crops, extant)
+# for primary_image_record in tqdm(curated_df.id.values, total=len(curated_df.id.values), desc='Creating thumbnails'):
+# 	create_thumbnail(primary_image_record, curated_df, crops, extant)
 if __name__ == '__main__':
 	main()
