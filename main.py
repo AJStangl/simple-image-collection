@@ -113,6 +113,7 @@ if __name__ == '__main__':
 	sources_df = pandas.DataFrame.from_records(sources)
 
 	curated_data = pandas.read_parquet("data/parquet/primary_caption.parquet", engine="pyarrow", filesystem=file_system)
+
 	secondary_data = pandas.read_parquet("data/parquet/thumbnail_curation.parquet", engine="pyarrow", filesystem=file_system)
 
 

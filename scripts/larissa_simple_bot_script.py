@@ -14,7 +14,6 @@ from praw.reddit import Submission
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from diffusers import DiffusionPipeline, StableDiffusionPipeline
 
-import os
 
 from common.utility.storage.blob import BlobAdapter
 from common.utility.storage.table import TableAdapter
@@ -22,7 +21,9 @@ from common.utility.storage.table import TableAdapter
 logging.getLogger("diffusers").setLevel(logging.WARNING)
 logging.getLogger("azure.storage").setLevel(logging.WARNING)
 
+import os
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
 
 
 class FuckingStatic:
@@ -63,7 +64,7 @@ class FuckingStatic:
 
 		print(f"Torch Status: {torch.cuda.is_available()}")
 
-		command = f"python D:\\code\\repos\\GFPGAN\\inference_gfpgan.py -i {image_path} -v 1.4 -s 2 -o {out_path}"
+		command = f"D:\\workspaces\\General\\venv\\Scripts\\python.exe D:\\code\\repos\\GFPGAN\\inference_gfpgan.py -i {image_path} -v 1.4 -s 2 -o {out_path}"
 
 		print(f"Running command: {command}")
 
@@ -232,18 +233,13 @@ class SimpleBot(threading.Thread):
 
 			print(f":: Using Device: {self.instance}")
 
-
-			diff_pipe: DiffusionPipeline = DiffusionPipeline.from_pretrained(f"{holder.diffusion_pipeline_path}", safety_checker=None)
-
-			pipe = StableDiffusionPipeline(**diff_pipe.components)
-
-			# pipe.to("cuda")
-
-			# pipe = StableDiffusionPipeline.from_pretrained(	holder.diffusion_pipeline_path, revision="fp16", torch_dtype=torch.float16, safety_checker=None)
+			pipe = StableDiffusionPipeline.from_pretrained(holder.diffusion_pipeline_path, revision="fp16",
+														   torch_dtype=torch.float32, safety_checker=None)
 
 			print(":: Model Loaded")
 
 			reddit_text, image_prompt = self.create_prompt(holder)
+
 			print(":: Prompt Created")
 
 			image_prompt = image_prompt.replace("little girl", "petite women")
@@ -279,7 +275,7 @@ class SimpleBot(threading.Thread):
 					"SexyAsianDiffusion": "e978fd72-d0cc-11ed-802d-922e8d939dd5",
 					"MildlyPenisDiffusion": "7aedfca4-d676-11ed-9536-6a42b6ad77bd",
 					"TTTDiffusion": "25d50538-d6f7-11ed-9f0f-6a1b95511d30",
-					"SexyGirl": "6c02c0aa-c116-11ed-a36b-625bab71eac2"
+					"PrettyGirlDiffusion": "6c02c0aa-c116-11ed-a36b-625bab71eac2"
 				}
 
 				submission: Submission = sub.submit_image(
@@ -324,7 +320,7 @@ class SimpleBot(threading.Thread):
 
 if __name__ == '__main__':
 
-	prompt_model: str = "D:\\code\\repos\\simple-collection\\notebooks\\pipelines\\images\\sd-prompt-bot"
+	prompt_model: str = "D:\\models\\sd-prompt-bot-8"
 
 	# pipeline_1 = PipeLineHolder("SexyDiffusion", "D:\\models\\SexyDiffusion", prompt_model)
 	#
@@ -350,9 +346,14 @@ if __name__ == '__main__':
 	#
 	# pipeline_13 = PipeLineHolder("TTTDiffusion", "D:\\models\\TTTDiffusion", prompt_model)
 
-	pipeline_14 = PipeLineHolder("SexyGirl", "D:\\code\\repos\\simple-collection\\notebooks\\pipelines\\images\\SexyDiffusion-3", prompt_model)
+	pipeline_1 = PipeLineHolder("SexyDiffusion", "D:\\models\\ContinuousDiffusion4", prompt_model)
+	pipeline_2 = PipeLineHolder("SWFPetite", "D:\\models\\ContinuousDiffusion4", prompt_model)
+	pipeline_3 = PipeLineHolder("RedHeadDiffusion", "D:\\models\\ContinuousDiffusion4", prompt_model)
+	pipeline_4 = PipeLineHolder("NextDoorGirlsDiffusion", "D:\\models\\ContinuousDiffusion4", prompt_model)
+	pipeline_5 = PipeLineHolder("SexyAsianDiffusion", "D:\\models\\ContinuousDiffusion4", prompt_model)
+	pipeline_6 = PipeLineHolder("PrettyGirlDiffusion", "D:\\models\\ContinuousDiffusion4", prompt_model)
+	pipe_line_holder_list = [pipeline_1, pipeline_2, pipeline_3, pipeline_4, pipeline_5, pipeline_6]
 
-	pipe_line_holder_list = [pipeline_14]
 
 	# pipe_line_holder_list = [
 	# 	pipeline_1,
@@ -373,7 +374,8 @@ if __name__ == '__main__':
 	random.shuffle(pipe_line_holder_list)
 
 	bot: SimpleBot = SimpleBot(pipe_line_holder_list, "SimpleBot", sys.argv[1])
-	bot.start()
+	bot.main_process()
+	# bot.start()
 	while True:
 		try:
 			time.sleep(1)
