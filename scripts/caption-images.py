@@ -102,20 +102,25 @@ if __name__ == '__main__':
 		{"name": "MemeDiffusion", "data": ["memes"]},
 		{"name": "TTTDiffusion", "data": ["trippinthroughtime"]},
 		{"name": "WallStreetDiffusion", "data": ["wallstreetbets"]},
-		{"name": "SexyDiffusion", "data": ["selfies", "Amicute", "amihot", "AmIhotAF", "HotGirlNextDoor", "sexygirls", "PrettyGirls", "gentlemanboners", "hotofficegirls", "tightdresses", "DLAH", "cougars_and_milfs_sfw"]},
+		{"name": "SexyDiffusion", "data": ["selfies", "Amicute", "amihot", "AmIhotAF", "HotGirlNextDoor"]},
 		{"name": "FatSquirrelDiffusion", "data": ["fatsquirrelhate"]},
 		{"name": "CelebrityDiffusion", "data": ["celebrities"]},
 		{"name": "OldLadyDiffusion", "data": ["oldladiesbakingpies"]},
 		{"name": "SWFPetite", "data": ["sfwpetite"]},
+		{"name": "SFWMilfs", "data": ["cougars_and_milfs_sfw"]},
 		{"name": "RedHeadDiffusion", "data": ["SFWRedheads"]},
 		{"name": "NextDoorGirlsDiffusion", "data": ["SFWNextDoorGirls"]},
-		{"name": "SexyAsianDiffusion", "data": ["realasians", "KoreanHotties", "prettyasiangirls", "AsianOfficeLady", "AsianInvasion"]},
+		{"name": "SexyDressDiffusion","data": ["SunDressesGoneWild", "ShinyDresses", "SlitDresses", "CollaredDresses", "DressesPorn","WomenInLongDresses", "Dresses"]},
+		{"name": "SexyAsianDiffusion",
+		 "data": ["realasians", "KoreanHotties", "prettyasiangirls", "AsianOfficeLady", "AsianInvasion","AesPleasingAsianGirls"]},
 		{"name": "MildlyPenisDiffusion", "data": ["mildlypenis"]},
-		{"name": "CandleDiffusion", "data": ["bathandbodyworks"]},
+		{"name": "PrettyGirlDiffusion",
+		 "data": ["sexygirls", "PrettyGirls", "gentlemanboners" "hotofficegirls", "tightdresses", "DLAH", "TrueFMK"]},
+		{"name": "CandleDiffusion", "data": ["bathandbodyworks"]}
 	]
 	sources_df = pandas.DataFrame.from_records(sources)
 
-	curated_data = pandas.read_parquet("data/parquet/back.parquet", engine="pyarrow", filesystem=file_system)
+	curated_data = pandas.read_parquet("data/parquet/primary_curation.parquet", engine="pyarrow", filesystem=file_system)
 
 	curated_data.set_index("id", inplace=True, drop=False)
 

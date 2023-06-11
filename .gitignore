@@ -18,3 +18,4 @@ common/*/__pycache__/*
 /notebooks/pipelines/images/sexy.json
 /notebooks/pipelines/images/temp.ipynb
 /notebooks/pipelines/images/training.txt
+/notebooks/pipelines/temp/
