@@ -19,3 +19,7 @@ common/*/__pycache__/*
 /notebooks/pipelines/images/temp.ipynb
 /notebooks/pipelines/images/training.txt
 /notebooks/pipelines/temp/
+/notebooks/pipelines/setting.yaml
+/notebooks/pipelines/client_secrets.json
+/praw.ini
+/log.txt

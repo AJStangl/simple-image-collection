@@ -1,147 +1,142 @@
-import json
+import os
+import logging
 import time
 
-import pandas
+from azure.core.credentials import AzureNamedKeyCredential
+from azure.core.paging import ItemPaged
+from azure.data.tables import TableClient, TableEntity, TableServiceClient
+from tqdm import tqdm
+from PIL import Image
+import requests
+import torch
+from common.captioning.caption import BlipCaption
+from common.functions.functions import Functions
 from adlfs import AzureBlobFileSystem
 
-from common.captioning.azure_descriptions import AzureCaption
-from common.functions import functions
-from common.functions.functions import Functions
-from common.schemas.pyarrow_schema import schema
+os.environ["AZURE_ACCOUNT_NAME"] = "ajdevreddit"
+os.environ["AZURE_TABLE_ENDPOINT"] = "https://ajdevreddit.table.core.windows.net/"
+os.environ["AZURE_QUEUE_ENDPOINT"] = "https://ajdevreddit.queue.core.windows.net/"
+os.environ[
+	"AZURE_ACCOUNT_KEY"] = "+9066TCgdeVignRdy50G4qjmNoUJuibl9ERiTGzdV4fwkvgdV3aSVqgLwldgZxj/UpKLkkfXg+3k+AStjFI33Q=="
+os.environ[
+	"AZURE_STORAGE_CONNECTION_STRING"] = "DefaultEndpointsProtocol=https;AccountName=ajdevreddit;AccountKey=+9066TCgdeVignRdy50G4qjmNoUJuibl9ERiTGzdV4fwkvgdV3aSVqgLwldgZxj/UpKLkkfXg+3k+AStjFI33Q==;BlobEndpoint=https://ajdevreddit.blob.core.windows.net/;QueueEndpoint=https://ajdevreddit.queue.core.windows.net/;TableEndpoint=https://ajdevreddit.table.core.windows.net/;FileEndpoint=https://ajdevreddit.file.core.windows.net/"
+os.environ["AZURE_VISION_API_KEY"] = "2ee8459a379c4b73aef287d1cf1c4b73"
+os.environ["AZURE_VISION_ENDPOINT"] = "https://aj-vision-ai.cognitiveservices.azure.com/"
+
 from common.storage.azure_file_storage import AzureFileStorageAdapter
 
 
-def run(_filtered_model, _current_captions):
-	total = len(_filtered_model)
-	i = 0
-	j = 0
-	records = _filtered_model.to_dict(orient='records')
-	new_records = [f"data/caption/{item['id']}.json" for item in records if item['id'] not in _current_captions]
-	for record in new_records:
-		try:
-			_file_system: AzureBlobFileSystem = AzureFileStorageAdapter('data').get_file_storage()
-			caption_reference = AzureCaption(_file_system)
-			image_id = record['id']
-			path = record['path']
-			out_path = f"data/caption/{image_id}.json"
-			remote_path: str = _file_system.url(path)
-			if out_path in _current_captions:
-				continue
+class TableAdapter(object):
+	credential = AzureNamedKeyCredential(os.environ["AZURE_ACCOUNT_NAME"], os.environ["AZURE_ACCOUNT_KEY"])
+
+	def __init__(self):
+		self.service: TableServiceClient = TableServiceClient(endpoint=os.environ["AZURE_TABLE_ENDPOINT"],
+															  credential=self.credential)
+		self.tables = self.service.list_tables()
+
+	def get_table_service_client(self) -> TableServiceClient:
+		return self.service
+
+	def perform_odata_query(self, table_name: str, query: str) -> list[dict]:
+		table_client: TableClient = self.get_table_client(table_name=table_name)
+		entities: ItemPaged[TableEntity] = table_client.query_entities(query)
+		return list(entities)
+
+	def get_table_client(self, table_name: str) -> TableClient:
+		service: TableServiceClient = self.get_table_service_client()
+		return service.get_table_client(table_name=table_name)
+
+	def upsert_entity_to_table(self, table_name: str, entity: dict):
+		table_client: TableClient = self.get_table_client(table_name=table_name)
+		table_client.upsert_entity(entity=entity)
+		return
+
+	def get_all_entities(self, table_name: str) -> list[dict]:
+		table_client: TableClient = self.get_table_client(table_name=table_name)
+		entities: ItemPaged[TableEntity] = table_client.list_entities()
+		return list(entities)
+
+	def get_table_client_instance(self, table_name: str) -> TableClient:
+		service: TableServiceClient = self.get_table_service_client()
+		return service.get_table_client(table_name=table_name)
+
+	def get_entity(self, table_name: str, partition_key: str, row_key: str) -> TableEntity:
+		table_client: TableClient = self.get_table_client(table_name=table_name)
+		entity: TableEntity = table_client.get_entity(partition_key=partition_key, row_key=row_key)
+		return entity
+
+
+def caption_image_from_url(model, image_url: str) -> str:
+	try:
+		image = Image.open(requests.get(image_url, stream=True).raw)
+		device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+		inputs = model.processor(image, return_tensors="pt").to(device, torch.float16)
+
+		out = model.model.generate(**inputs)
+		return model.processor.decode(out[0], skip_special_tokens=True, max_new_tokens=200)
+	except Exception as e:
+		print(e)
+		return ""
+
+
+def run():
+	logging.getLogger("azure.storage").setLevel(logging.WARNING)
+
+	print("=== Starting 0-2 Blip Image Captioning ===")
+
+	tqdm.pandas(desc="Progress")
+
+	file_system = AzureFileStorageAdapter('data').get_file_storage()
+
+	caption_0 = BlipCaption("cpu")
+
+	table_client = TableAdapter().get_table_client("curationSecondary")
+
+	while True:
+		entities = table_client.query_entities("accept eq true and caption eq ''")
+		things = list(entities)
+		total = len(things)
+
+		for elem in tqdm(things, total=total, desc="Captioning"):
 			try:
-				print(f"Captioning {i} of {total}")
-				caption_output = caption_reference.image_analysis(remote_path)
+				with open("log.txt", 'r') as in_handle:
+					ids = in_handle.readlines()
+					extant = [_id.replace("\n", "") for _id in ids]
+					if elem["id"] in extant:
+						# print("Already processed")
+						continue
+				thumbnail_path = elem["thumbnail_path"]
+				url = file_system.url(thumbnail_path)
+				caption = caption_image_from_url(caption_0, url)
 
-				if caption_output is None:
-					print(f"Error In Output is empty for {image_id}")
-					continue
+				if caption.startswith("ara"):
+					caption = " ".join(caption.split(" ")[1:])
 
-				time.sleep(5)
-				json_result = caption_output.json_result
+				elem["smart_caption"] = caption
+				if elem['caption'] == "" or elem['caption'] is None:
+					elem['caption'] = caption
 
-				if json_result is None:
-					print(f"Error In Json Result is empty for {image_id}")
-					continue
 
-				if json.loads(json_result).get('error'):
-					print(f"Error In Json Result with: {json_result} for {image_id}")
-					continue
+				print(caption, elem["id"])
 
-				print(f"Writing Captioning For {image_id}")
+				url_for_pil = file_system.url(elem["pil_thumbnail_path"])
+				caption = caption_image_from_url(caption_0, url_for_pil)
 
-				with _file_system.open(out_path, 'w', encoding='utf-8') as handle:
-					handle.write(json_result)
-					j += 1
+				if caption.startswith("ara"):
+					caption = " ".join(caption.split(" ")[1:])
 
-				if _file_system.size(out_path) == 0:
-					print(f"Caption File {out_path} is empty, deleting...")
-					_file_system.rm(out_path)
-					continue
+				elem["pil_caption"] = caption
+				print(caption, elem["id"])
 
-				else:
-					print(f"Captioning For {image_id} Complete new: {j}")
-					print(f"Captioning {i} of {total}")
-					continue
-
-			except Exception as ex:
-				print(f"Error in handle_captioning with exception {ex}")
-				print(ex)
+				with open("log.txt", 'a') as f:
+					f.write(elem["id"] + "\n")
+					table_client.upsert_entity(entity=elem)
+			except Exception as e:
+				print(e)
 				continue
 
-		finally:
-			i += 1
-			del caption_reference
-			del _file_system
+		time.sleep(10)
 
 
 if __name__ == '__main__':
-	functions: Functions = Functions()
-
-	file_system: AzureBlobFileSystem = AzureFileStorageAdapter('data').get_file_storage()
-
-	print("Loading Current Caption Files...")
-	current = file_system.ls("data/caption")
-	current_captions = [item.replace('\n', '') for item in current]
-	print(f"Total Number Of Caption Files Prior to Removal - {len(current_captions)}")
-
-	print("Removing Empty Caption Files...")
-	for caption in current_captions:
-		if file_system.size(caption) == 0:
-			print(f"Caption File {caption} is empty, deleting...")
-			file_system.rm(caption)
-
-	print("Loading Current Caption Files POST Clean Up...")
-	current = file_system.ls("data/caption")
-	current_captions = [item.replace('\n', '') for item in current]
-	print(f"Total Number Of Caption Files - {len(current_captions)}")
-
-	sources = [
-		{"name": "CityDiffusion", "data": ["CityPorn"]},
-		{"name": "NatureDiffusion", "data": ["EarthPorn"]},
-		{"name": "CosmicDiffusion", "data": ["spaceporn"]},
-		{"name": "ITAPDiffusion", "data": ["itookapicture"]},
-		{"name": "MemeDiffusion", "data": ["memes"]},
-		{"name": "TTTDiffusion", "data": ["trippinthroughtime"]},
-		{"name": "WallStreetDiffusion", "data": ["wallstreetbets"]},
-		{"name": "SexyDiffusion", "data": ["selfies", "Amicute", "amihot", "AmIhotAF", "HotGirlNextDoor"]},
-		{"name": "FatSquirrelDiffusion", "data": ["fatsquirrelhate"]},
-		{"name": "CelebrityDiffusion", "data": ["celebrities"]},
-		{"name": "OldLadyDiffusion", "data": ["oldladiesbakingpies"]},
-		{"name": "SWFPetite", "data": ["sfwpetite"]},
-		{"name": "SFWMilfs", "data": ["cougars_and_milfs_sfw"]},
-		{"name": "RedHeadDiffusion", "data": ["SFWRedheads"]},
-		{"name": "NextDoorGirlsDiffusion", "data": ["SFWNextDoorGirls"]},
-		{"name": "SexyDressDiffusion","data": ["SunDressesGoneWild", "ShinyDresses", "SlitDresses", "CollaredDresses", "DressesPorn","WomenInLongDresses", "Dresses"]},
-		{"name": "SexyAsianDiffusion",
-		 "data": ["realasians", "KoreanHotties", "prettyasiangirls", "AsianOfficeLady", "AsianInvasion","AesPleasingAsianGirls"]},
-		{"name": "MildlyPenisDiffusion", "data": ["mildlypenis"]},
-		{"name": "PrettyGirlDiffusion",
-		 "data": ["sexygirls", "PrettyGirls", "gentlemanboners" "hotofficegirls", "tightdresses", "DLAH", "TrueFMK"]},
-		{"name": "CandleDiffusion", "data": ["bathandbodyworks"]}
-	]
-	sources_df = pandas.DataFrame.from_records(sources)
-
-	curated_data = pandas.read_parquet("data/parquet/primary_curation.parquet", engine="pyarrow", filesystem=file_system)
-
-	curated_data.set_index("id", inplace=True, drop=False)
-
-	filtered = curated_data.loc[curated_data["accept"] == True, schema.names]
-
-	filtered.dropna(inplace=True)
-
-	filtered.reset_index(inplace=True, drop=True)
-
-	filtered['model'] = filtered.apply(lambda x: functions.add_source(x, sources), axis=1)
-
-	filtered_model = filtered.loc[filtered['model'] != "", schema.names]
-
-	filtered_model.dropna(inplace=True)
-
-	filtered_model.reset_index(inplace=True, drop=True)
-
-	print("Starting Captioning...")
-
-	run(filtered_model, current_captions)
-
-	print(f"Total Number Of Caption Files - {len(file_system.ls('data/caption'))}")
-
-	print("0-2 Azure Image Analysis Process Complete - Shutting Down")
+	run()
